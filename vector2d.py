@@ -38,3 +38,23 @@ class Vector2d:
 
     def __mul__(self, scalar):
         return Vector2d(self.x * scalar, self.y * scalar)
+
+    def __format__(self, fmt_spec=''):
+        if fmt_spec.endswith('p'):
+            fmt_spec = fmt_spec[:-1]
+            coords = (abs(self), self.angle())
+            outer_fmt = '<{}, {}>'
+        else:
+            coords = self
+            outer_fmt = '({}, {})'
+        components = (format(c, fmt_spec) for c in coords)
+        return outer_fmt.format(*components)
+
+    def angle(self):
+        return math.atan2(self.y, self.x)
+
+    @classmethod
+    def frombytes(cls, octets):
+        typecode = chr(octets[0])
+        memv = memoryview(octets[1:]).cast(typecode)
+        return cls(*memv)
