@@ -1,23 +1,39 @@
-from math import hypot
+from array import array
+import reprlib
+import math
 
 class Vector:
-    def __init__(self, x=0, y=0):
-        self.x = x
-        self.y = y
+    typecode = 'd'
+
+    def __init__(self, components):
+        self._components = array(self.typecode, components)
+
+    def __iter__(self):
+        return iter(self._components)
 
     def __repr__(self):
-        return 'Vector(%r, %r)' % (self.x, self.y)
+        components = reprlib.repr(self._components)
+        components = components[components.find('['):-1]
+        return 'Vector({})'.format(components)
+
+    def __str__(self):
+        return str(tuple(self))
+
+    def __bytes__(self):
+        return (bytes([ord(self.typecode)]) +
+                bytes(self._components))
+
+    def __eq__(self, other):
+        return tuple(self) == tuple(other)
 
     def __abs__(self):
-        return hypot(self.x, self.y)
+        return math.sqrt(sum(x * x for x in self))
 
     def __bool__(self):
         return bool(abs(self))
 
-    def __add__(self, other):
-        x = self.x + other.x
-        y = self.y + other.y
-        return Vector(x, y)
-
-    def __mul__(self, scalar):
-        return Vector(self.x * scalar, self.y * scalar)
+    @classmethod
+    def frombytes(cls, octets):
+        typecode = chr(octets[0])
+        memv = memoryview(octets[1:]).cast(typecode)
+        return cls(memv)
