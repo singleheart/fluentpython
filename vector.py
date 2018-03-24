@@ -46,6 +46,17 @@ class Vector:
             msg = '{cls.__name__} indices must be integers'
             raise TypeError(msg.format(cls=cls))
 
+    shortcut_names = 'xyzt'
+
+    def __getattr__(self, name):
+        cls = type(self)
+        if len(name) == 1:
+            pos = cls.shortcut_names.find(name)
+            if 0 <= pos < len(self._components):
+                return self._components[pos]
+        msg = '{.__name__!r} object has no attribute {!r}'
+        raise AttributeError(msg.format(cls, name))
+
     @classmethod
     def frombytes(cls, octets):
         typecode = chr(octets[0])
