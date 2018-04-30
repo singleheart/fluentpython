@@ -4,6 +4,7 @@ import math
 import numbers
 import functools
 import operator
+import itertools
 
 class Vector:
     typecode = 'd'
@@ -62,6 +63,29 @@ class Vector:
                 return self._components[pos]
         msg = '{.__name__!r} object has no attribute {!r}'
         raise AttributeError(msg.format(cls, name))
+
+    def angle(self, n):
+        r = math.sqrt(sum(x*x for x in self[n:]))
+        a = math.atan2(r, self[n-1])
+        if (n == len(self) - 1) and (self[-1] < 0):
+            return math.pi*2 - a
+        else:
+            return a
+
+    def angles(self):
+        return (self.angle(n) for n in range(1, len(self)))
+
+    def __format__(self, fmt_spec=''):
+        if fmt_spec.endswith('h'): # hyperspherical coordinate
+            fmt_spec = fmt_spec[:-1]
+            coords = itertools.chain([abs(self)], self.angles())
+            outer_fmt = '<{}>'
+        else:
+            coords = self
+            outer_fmt = '({})'
+        components = (format(c, fmt_spec) for c in coords)
+        return outer_fmt.format(', '.join(components))
+
 
     def __setattr__(self, name, value):
         cls = type(self)
